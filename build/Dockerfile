@@ -15,7 +15,7 @@ COPY . ${CODE_DIR}
 ARG LDFLAGS
 RUN CGO_ENABLED=0 go build \
         -ldflags "$LDFLAGS" \
-        -o ${BIN_FILE} cmd/api/*
+        -o ${BIN_FILE} cmd/auth/*
 
 FROM alpine:3.21.3 AS prod
 

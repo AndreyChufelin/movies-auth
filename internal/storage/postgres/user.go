@@ -1,0 +1,101 @@
+package postgres
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"time"
+
+	"github.com/AndreyChufelin/movies-auth/internal/storage"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
+)
+
+func (s Storage) InsertUser(user *storage.User) error {
+	query := `
+		INSERT INTO users (name, email, password_hash, activated)
+		VALUES (@name, @email, @password, @activated)
+		RETURNING id, created_at, version`
+
+	args := pgx.NamedArgs{
+		"name":      user.Name,
+		"email":     user.Email,
+		"password":  user.PasswordHash,
+		"activated": user.Activated,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := s.db.QueryRow(ctx, query, args).
+		Scan(&user.ID, &user.CreatedAt, &user.Version)
+	if err != nil {
+		var e *pgconn.PgError
+		if errors.As(err, &e) && e.Code == pgerrcode.UniqueViolation {
+			return storage.ErrDuplicateEmail
+		}
+		return fmt.Errorf("failed to insert user: %w", err)
+	}
+
+	return nil
+}
+
+func (s Storage) GetUserByEmail(email string) (*storage.User, error) {
+	query := `
+		SELECT id, created_at, name, email, password_hash, activated, version
+		FROM users
+		WHERE email = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	row, err := s.db.Query(ctx, query, email)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query user by email: %w", err)
+	}
+
+	user, err := pgx.CollectOneRow(row, pgx.RowToStructByName[storage.User])
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, storage.ErrUserNotFound
+		}
+		return nil, fmt.Errorf("failed to collect user by email: %w", err)
+	}
+
+	return &user, nil
+}
+
+func (s Storage) UpdateUser(user *storage.User) error {
+	query := `
+		UPDATE users
+		SET name = @name, email = @email, password_hash = @password, activated = @activated, version = version + 1
+		WHERE id = @id AND version = @version
+		RETURNING version`
+
+	args := pgx.NamedArgs{
+		"name":      user.Name,
+		"email":     user.Email,
+		"password":  user.PasswordHash,
+		"activated": user.Activated,
+		"id":        user.ID,
+		"version":   user.Version,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := s.db.QueryRow(ctx, query, args).Scan(&user.Version)
+	if err != nil {
+		var e *pgconn.PgError
+		if errors.As(err, &e) && e.Code == pgerrcode.UniqueViolation {
+			return storage.ErrDuplicateEmail
+		}
+		if errors.Is(err, pgx.ErrNoRows) {
+			return storage.ErrEditConflict
+		}
+		return fmt.Errorf("failed to update user: %w", err)
+	}
+
+	return nil
+}

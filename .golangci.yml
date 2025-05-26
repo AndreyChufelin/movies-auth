@@ -59,6 +59,9 @@ linters:
             - $gostd
             - github.com/AndreyChufelin
             - github.com/jackc/pgx/v5
+            - github.com/jackc/pgerrcode
+            - github.com/spf13/viper
+            - golang.org/x/crypto/bcrypt
         test:
           files:
             - $test
