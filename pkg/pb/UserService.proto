@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option go_package = "github.com/AndreyChufelin/movies-auth/pkg/pb/user";
+
+package user;
+
+service UserService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+}
+
+message RegisterRequest {
+  string name = 1;
+  string email = 2;
+  string password = 3;
+}
+
+message RegisterResponse {
+
+}
