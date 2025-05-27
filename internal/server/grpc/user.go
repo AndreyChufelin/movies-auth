@@ -44,16 +44,32 @@ func (s *Server) Register(ctx context.Context, request *pbuser.RegisterRequest) 
 			panic(fmt.Sprintf("Unexpected error attaching metadata: %v", err))
 		}
 
+		logg.Warn("validation error", "error", vErr.Error())
 		return nil, st.Err()
 	}
 
 	err = s.storage.InsertUser(user)
 	if err != nil {
 		if errors.Is(err, storage.ErrDuplicateEmail) {
+			logg.Warn("email already exists", "email", user.Email)
 			return nil, status.Error(codes.AlreadyExists, "email already exists")
 		}
+		logg.Error("failed to insert new user", "email", user.Email)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return &pbuser.RegisterResponse{}, nil
+	s.background(func() {
+		err = s.mailer.Send(user.Email, "user_welcome.tmpl", user)
+		if err != nil {
+			logg.Error("failed to send email", "error", err)
+		}
+	})
+
+	return &pbuser.RegisterResponse{
+		Id:        user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		Activated: user.Activated,
+		CreatedAt: user.CreatedAt.Unix(),
+	}, nil
 }

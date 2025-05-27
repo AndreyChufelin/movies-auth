@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/AndreyChufelin/movies-auth/internal/config"
+	"github.com/AndreyChufelin/movies-auth/internal/mailer"
 	grpcserver "github.com/AndreyChufelin/movies-auth/internal/server/grpc"
 	"github.com/AndreyChufelin/movies-auth/internal/storage/postgres"
 )
@@ -45,7 +46,15 @@ func main() {
 		cancel()
 	}
 
-	server := grpcserver.NewGRPC(logg, storage, "50051")
+	mailer := mailer.New(
+		config.Mailer.Host,
+		config.Mailer.Port,
+		config.Mailer.Username,
+		config.Mailer.Password,
+		config.Mailer.Sender,
+	)
+
+	server := grpcserver.NewGRPC(logg, storage, mailer, "50051")
 	go func() {
 		if err := server.Start(); err != nil {
 			logg.Error("failed to start grpc server", "err", err)

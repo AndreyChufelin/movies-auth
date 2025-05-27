@@ -9,7 +9,8 @@ import (
 )
 
 type Config struct {
-	DB DBConf
+	DB     DBConf
+	Mailer MailerConf
 }
 
 type DBConf struct {
@@ -21,6 +22,14 @@ type DBConf struct {
 	MaxOpenConns int           `mapstructure:"max_open_conns"`
 	MaxIdleConns int           `mapstructure:"max_idle_conns"`
 	MaxIdleTime  time.Duration `mapstructure:"max_idle_time"`
+}
+
+type MailerConf struct {
+	Host     string
+	Port     int
+	Username string
+	Password string
+	Sender   string
 }
 
 func LoadConfig(path string) (Config, error) {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"sync"
 
 	"github.com/AndreyChufelin/movies-api/pkg/validator"
 	"github.com/AndreyChufelin/movies-auth/internal/storage"
@@ -19,6 +20,8 @@ type Server struct {
 	port      string
 	storage   Storage
 	validator *validator.Validator
+	mailer    Mailer
+	wg        sync.WaitGroup
 }
 
 type Storage interface {
@@ -27,11 +30,16 @@ type Storage interface {
 	UpdateUser(user *storage.User) error
 }
 
-func NewGRPC(logger *slog.Logger, storage Storage, port string) *Server {
+type Mailer interface {
+	Send(recipient, templateFile string, data interface{}) error
+}
+
+func NewGRPC(logger *slog.Logger, storage Storage, mailer Mailer, port string) *Server {
 	grpcServer := grpc.NewServer()
 	return &Server{
 		logger:  logger,
 		storage: storage,
+		mailer:  mailer,
 		server:  grpcServer,
 		port:    port,
 	}
@@ -62,6 +70,8 @@ func (s *Server) Stop(ctx context.Context) error {
 	s.logger.Info("stopping grpc server")
 	done := make(chan struct{})
 
+	s.wg.Wait()
+
 	go func() {
 		s.server.GracefulStop()
 		close(done)
@@ -76,4 +86,19 @@ func (s *Server) Stop(ctx context.Context) error {
 		s.server.Stop()
 		return fmt.Errorf("stop operation canceled: %w", ctx.Err())
 	}
+}
+
+func (s *Server) background(fn func()) {
+	s.wg.Add(1)
+	go func() {
+		defer s.wg.Done()
+
+		defer func() {
+			if err := recover(); err != nil {
+				s.logger.Error("panic recovered", err)
+			}
+		}()
+
+		fn()
+	}()
 }

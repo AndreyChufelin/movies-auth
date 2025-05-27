@@ -8,6 +8,10 @@ services:
       db:
         condition: service_healthy
     environment:
+      MAILER_HOST: mailhog
+      MAILER_USERNAME: ${SMTP_USERNAME}
+      MAILER_PASSWORD: ${SMTP_PASSWORD}
+      DB_HOST: db
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
@@ -43,6 +47,11 @@ services:
       - GOOSE_VERBOSE=false
     volumes:
       - ../migrations:/migrations
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "8025:8025"
+      - "1025:1025"
 
 volumes:
   pg_data:
