@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"time"
@@ -98,4 +99,42 @@ func (s Storage) UpdateUser(user *storage.User) error {
 	}
 
 	return nil
+}
+
+func (s Storage) GetUserForToken(scope, tokenPlaintext string) (*storage.User, error) {
+	tokenHash := sha256.Sum256([]byte(tokenPlaintext))
+
+	query := `
+		SELECT users.id, users.created_at, users.name, users.email, users.password_hash, users.activated, users.version
+		FROM users
+		INNER JOIN tokens
+		ON users.id = tokens.user_id
+		WHERE tokens.hash = @hash
+		AND tokens.scope = @scope
+		AND tokens.expiry > @expiry`
+
+	args := pgx.NamedArgs{
+		"hash":   tokenHash[:],
+		"scope":  scope,
+		"expiry": time.Now(),
+	}
+
+	var user storage.User
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := s.db.Query(ctx, query, args)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query user for token: %w", err)
+	}
+	user, err = pgx.CollectOneRow(rows, pgx.RowToStructByName[storage.User])
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, storage.ErrUserNotFound
+		}
+		return nil, fmt.Errorf("failed to collect user for token: %w", err)
+	}
+
+	return &user, nil
 }

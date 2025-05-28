@@ -5,7 +5,16 @@ option go_package = "github.com/AndreyChufelin/movies-auth/pkg/pb/user";
 package user;
 
 service UserService {
-  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc Register(RegisterRequest) returns (UserMessage);
+  rpc Activated(ActivatedRequest) returns (UserMessage);
+}
+
+message UserMessage {
+  int64 id = 1;
+  string name = 2;
+  string email = 3;
+  bool activated = 4;
+  int64 created_at = 5;
 }
 
 message RegisterRequest {
@@ -14,10 +23,6 @@ message RegisterRequest {
   string password = 3;
 }
 
-message RegisterResponse {
-  int64 id = 1;
-  string name = 2;
-  string email = 3;
-  bool activated = 4;
-  int64 created_at = 5;
+message ActivatedRequest {
+  string token = 1;
 }

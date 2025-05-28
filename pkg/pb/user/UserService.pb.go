@@ -21,6 +21,82 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type UserMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	Activated     bool                   `protobuf:"varint,4,opt,name=activated,proto3" json:"activated,omitempty"`
+	CreatedAt     int64                  `protobuf:"varint,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UserMessage) Reset() {
+	*x = UserMessage{}
+	mi := &file_pkg_pb_UserService_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserMessage) ProtoMessage() {}
+
+func (x *UserMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_pb_UserService_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserMessage.ProtoReflect.Descriptor instead.
+func (*UserMessage) Descriptor() ([]byte, []int) {
+	return file_pkg_pb_UserService_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *UserMessage) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *UserMessage) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *UserMessage) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *UserMessage) GetActivated() bool {
+	if x != nil {
+		return x.Activated
+	}
+	return false
+}
+
+func (x *UserMessage) GetCreatedAt() int64 {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return 0
+}
+
 type RegisterRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -32,7 +108,7 @@ type RegisterRequest struct {
 
 func (x *RegisterRequest) Reset() {
 	*x = RegisterRequest{}
-	mi := &file_pkg_pb_UserService_proto_msgTypes[0]
+	mi := &file_pkg_pb_UserService_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44,7 +120,7 @@ func (x *RegisterRequest) String() string {
 func (*RegisterRequest) ProtoMessage() {}
 
 func (x *RegisterRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_pb_UserService_proto_msgTypes[0]
+	mi := &file_pkg_pb_UserService_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57,7 +133,7 @@ func (x *RegisterRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterRequest.ProtoReflect.Descriptor instead.
 func (*RegisterRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_pb_UserService_proto_rawDescGZIP(), []int{0}
+	return file_pkg_pb_UserService_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *RegisterRequest) GetName() string {
@@ -81,32 +157,28 @@ func (x *RegisterRequest) GetPassword() string {
 	return ""
 }
 
-type RegisterResponse struct {
+type ActivatedRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
-	Activated     bool                   `protobuf:"varint,4,opt,name=activated,proto3" json:"activated,omitempty"`
-	CreatedAt     int64                  `protobuf:"varint,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *RegisterResponse) Reset() {
-	*x = RegisterResponse{}
-	mi := &file_pkg_pb_UserService_proto_msgTypes[1]
+func (x *ActivatedRequest) Reset() {
+	*x = ActivatedRequest{}
+	mi := &file_pkg_pb_UserService_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *RegisterResponse) String() string {
+func (x *ActivatedRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*RegisterResponse) ProtoMessage() {}
+func (*ActivatedRequest) ProtoMessage() {}
 
-func (x *RegisterResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_pb_UserService_proto_msgTypes[1]
+func (x *ActivatedRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_pb_UserService_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -117,64 +189,39 @@ func (x *RegisterResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use RegisterResponse.ProtoReflect.Descriptor instead.
-func (*RegisterResponse) Descriptor() ([]byte, []int) {
-	return file_pkg_pb_UserService_proto_rawDescGZIP(), []int{1}
+// Deprecated: Use ActivatedRequest.ProtoReflect.Descriptor instead.
+func (*ActivatedRequest) Descriptor() ([]byte, []int) {
+	return file_pkg_pb_UserService_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *RegisterResponse) GetId() int64 {
+func (x *ActivatedRequest) GetToken() string {
 	if x != nil {
-		return x.Id
-	}
-	return 0
-}
-
-func (x *RegisterResponse) GetName() string {
-	if x != nil {
-		return x.Name
+		return x.Token
 	}
 	return ""
-}
-
-func (x *RegisterResponse) GetEmail() string {
-	if x != nil {
-		return x.Email
-	}
-	return ""
-}
-
-func (x *RegisterResponse) GetActivated() bool {
-	if x != nil {
-		return x.Activated
-	}
-	return false
-}
-
-func (x *RegisterResponse) GetCreatedAt() int64 {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return 0
 }
 
 var File_pkg_pb_UserService_proto protoreflect.FileDescriptor
 
 const file_pkg_pb_UserService_proto_rawDesc = "" +
 	"\n" +
-	"\x18pkg/pb/UserService.proto\x12\x04user\"W\n" +
-	"\x0fRegisterRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
-	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x03 \x01(\tR\bpassword\"\x89\x01\n" +
-	"\x10RegisterResponse\x12\x0e\n" +
+	"\x18pkg/pb/UserService.proto\x12\x04user\"\x84\x01\n" +
+	"\vUserMessage\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
 	"\x05email\x18\x03 \x01(\tR\x05email\x12\x1c\n" +
 	"\tactivated\x18\x04 \x01(\bR\tactivated\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x05 \x01(\x03R\tcreatedAt2H\n" +
-	"\vUserService\x129\n" +
-	"\bRegister\x12\x15.user.RegisterRequest\x1a\x16.user.RegisterResponseB3Z1github.com/AndreyChufelin/movies-auth/pkg/pb/userb\x06proto3"
+	"created_at\x18\x05 \x01(\x03R\tcreatedAt\"W\n" +
+	"\x0fRegisterRequest\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
+	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1a\n" +
+	"\bpassword\x18\x03 \x01(\tR\bpassword\"(\n" +
+	"\x10ActivatedRequest\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token2{\n" +
+	"\vUserService\x124\n" +
+	"\bRegister\x12\x15.user.RegisterRequest\x1a\x11.user.UserMessage\x126\n" +
+	"\tActivated\x12\x16.user.ActivatedRequest\x1a\x11.user.UserMessageB3Z1github.com/AndreyChufelin/movies-auth/pkg/pb/userb\x06proto3"
 
 var (
 	file_pkg_pb_UserService_proto_rawDescOnce sync.Once
@@ -188,16 +235,19 @@ func file_pkg_pb_UserService_proto_rawDescGZIP() []byte {
 	return file_pkg_pb_UserService_proto_rawDescData
 }
 
-var file_pkg_pb_UserService_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_pkg_pb_UserService_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_pkg_pb_UserService_proto_goTypes = []any{
-	(*RegisterRequest)(nil),  // 0: user.RegisterRequest
-	(*RegisterResponse)(nil), // 1: user.RegisterResponse
+	(*UserMessage)(nil),      // 0: user.UserMessage
+	(*RegisterRequest)(nil),  // 1: user.RegisterRequest
+	(*ActivatedRequest)(nil), // 2: user.ActivatedRequest
 }
 var file_pkg_pb_UserService_proto_depIdxs = []int32{
-	0, // 0: user.UserService.Register:input_type -> user.RegisterRequest
-	1, // 1: user.UserService.Register:output_type -> user.RegisterResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	1, // 0: user.UserService.Register:input_type -> user.RegisterRequest
+	2, // 1: user.UserService.Activated:input_type -> user.ActivatedRequest
+	0, // 2: user.UserService.Register:output_type -> user.UserMessage
+	0, // 3: user.UserService.Activated:output_type -> user.UserMessage
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -214,7 +264,7 @@ func file_pkg_pb_UserService_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pkg_pb_UserService_proto_rawDesc), len(file_pkg_pb_UserService_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

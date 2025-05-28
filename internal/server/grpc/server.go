@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net"
 	"sync"
+	"time"
 
 	"github.com/AndreyChufelin/movies-api/pkg/validator"
 	"github.com/AndreyChufelin/movies-auth/internal/storage"
@@ -28,6 +29,10 @@ type Storage interface {
 	InsertUser(user *storage.User) error
 	GetUserByEmail(email string) (*storage.User, error)
 	UpdateUser(user *storage.User) error
+	NewToken(userID int64, ttl time.Duration, scope string) (*storage.Token, error)
+	GetUserForToken(scope, token string) (*storage.User, error)
+	// GetAllTokensForUser(user *storage.User) (storage.Token, error)
+	DeleteToAllTokensForUser(scope string, userID int64) error
 }
 
 type Mailer interface {
