@@ -13,6 +13,8 @@ var (
 	ErrEditConflict   = errors.New("user not found")
 )
 
+var AnonymousUser = &User{}
+
 type User struct {
 	ID           int64     `json:"id"`
 	CreatedAt    time.Time `json:"created_at"`
@@ -22,6 +24,10 @@ type User struct {
 	Password     *string   `db:"-" json:"-" validate:"required,gte=8,lte=72"`
 	Activated    bool      `json:"activated"`
 	Version      int       `json:"-"`
+}
+
+func (u *User) IsAnonymous() bool {
+	return u == AnonymousUser
 }
 
 func (u *User) SetPassword(plaintextPassword string) error {

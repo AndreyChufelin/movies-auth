@@ -2,6 +2,7 @@ package grpcserver
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
@@ -11,7 +12,10 @@ import (
 	"github.com/AndreyChufelin/movies-api/pkg/validator"
 	"github.com/AndreyChufelin/movies-auth/internal/storage"
 	pbuser "github.com/AndreyChufelin/movies-auth/pkg/pb/user"
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type Server struct {
@@ -106,4 +110,28 @@ func (s *Server) background(fn func()) {
 
 		fn()
 	}()
+}
+
+func validationError(logger *slog.Logger, err error) error {
+	var vErr *validator.ValidationErrors
+	if errors.As(err, &vErr) {
+		st := status.New(codes.InvalidArgument, "validation error")
+
+		br := &errdetails.BadRequest{}
+		for _, e := range vErr.Errors {
+			br.FieldViolations = append(br.FieldViolations, &errdetails.BadRequest_FieldViolation{
+				Field:       e.Field,
+				Description: e.Message,
+			})
+		}
+
+		st, err := st.WithDetails(br)
+		if err != nil {
+			panic(fmt.Sprintf("Unexpected error attaching metadata: %v", err))
+		}
+
+		logger.Warn("validation error", "error", vErr.Error())
+		return st.Err()
+	}
+	return status.Error(codes.InvalidArgument, "validation error")
 }

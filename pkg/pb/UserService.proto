@@ -7,6 +7,8 @@ package user;
 service UserService {
   rpc Register(RegisterRequest) returns (UserMessage);
   rpc Activated(ActivatedRequest) returns (UserMessage);
+  rpc Authentication(AuthenticationRequest) returns (AuthenticationResponse);
+  rpc VerifyToken(VerifyTokenRequest) returns (UserMessage);
 }
 
 message UserMessage {
@@ -24,5 +26,19 @@ message RegisterRequest {
 }
 
 message ActivatedRequest {
+  string token = 1;
+}
+
+message AuthenticationRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message AuthenticationResponse {
+  string token = 1;
+  int64 expiry = 2;
+}
+
+message VerifyTokenRequest {
   string token = 1;
 }

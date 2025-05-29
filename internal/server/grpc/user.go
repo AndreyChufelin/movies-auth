@@ -3,13 +3,10 @@ package grpcserver
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
-	"github.com/AndreyChufelin/movies-api/pkg/validator"
 	"github.com/AndreyChufelin/movies-auth/internal/storage"
 	pbuser "github.com/AndreyChufelin/movies-auth/pkg/pb/user"
-	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -28,25 +25,8 @@ func (s *Server) Register(ctx context.Context, request *pbuser.RegisterRequest) 
 	}
 
 	err := s.validator.Validate(user)
-	var vErr *validator.ValidationErrors
-	if errors.As(err, &vErr) {
-		st := status.New(codes.InvalidArgument, "validation error")
-
-		br := &errdetails.BadRequest{}
-		for _, e := range vErr.Errors {
-			br.FieldViolations = append(br.FieldViolations, &errdetails.BadRequest_FieldViolation{
-				Field:       e.Field,
-				Description: e.Message,
-			})
-		}
-
-		st, err := st.WithDetails(br)
-		if err != nil {
-			panic(fmt.Sprintf("Unexpected error attaching metadata: %v", err))
-		}
-
-		logg.Warn("validation error", "error", vErr.Error())
-		return nil, st.Err()
+	if err != nil {
+		return nil, validationError(logg, err)
 	}
 
 	err = s.storage.InsertUser(user)
@@ -77,13 +57,7 @@ func (s *Server) Register(ctx context.Context, request *pbuser.RegisterRequest) 
 		}
 	})
 
-	return &pbuser.UserMessage{
-		Id:        user.ID,
-		Name:      user.Name,
-		Email:     user.Email,
-		Activated: user.Activated,
-		CreatedAt: user.CreatedAt.Unix(),
-	}, nil
+	return userToUserMessage(user), nil
 }
 
 func (s *Server) Activated(ctx context.Context, request *pbuser.ActivatedRequest) (*pbuser.UserMessage, error) {
@@ -122,11 +96,87 @@ func (s *Server) Activated(ctx context.Context, request *pbuser.ActivatedRequest
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
+	return userToUserMessage(user), nil
+}
+
+func (s *Server) Authentication(ctx context.Context, request *pbuser.AuthenticationRequest) (*pbuser.AuthenticationResponse, error) {
+	logg := s.logger.With("handler", "authentication")
+	logg.Info("REQUEST")
+
+	input := struct {
+		Email    string `validate:"required,email"`
+		Password string `validate:"required,gte=8,lte=72"`
+	}{request.Email, request.Password}
+
+	err := s.validator.Validate(input)
+	if err != nil {
+		return nil, validationError(logg, err)
+	}
+
+	user, err := s.storage.GetUserByEmail(request.Email)
+	if err != nil {
+		if errors.Is(err, storage.ErrUserNotFound) {
+			logg.Warn("user doesn't exist")
+			return nil, status.Error(codes.InvalidArgument, "user not exist")
+		}
+		logg.Error("failed to get user by email", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	match, err := user.PasswordMatches(request.Password)
+	if err != nil {
+		logg.Error("failed to match password", "id", user.ID, "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	if !match {
+		logg.Warn("invalid password", "id", user.ID)
+		return nil, status.Error(codes.InvalidArgument, "invalid password")
+	}
+
+	token, err := s.storage.NewToken(user.ID, 24*time.Hour, storage.ScopeAuthentication)
+	if err != nil {
+		logg.Error("failed te create new token", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &pbuser.AuthenticationResponse{
+		Token:  token.Plaintext,
+		Expiry: token.Expiry.Unix(),
+	}, nil
+}
+
+func (s *Server) VerifyToken(ctx context.Context, request *pbuser.VerifyTokenRequest) (*pbuser.UserMessage, error) {
+	logg := s.logger.With("handler", "verify token")
+	logg.Info("REQUEST")
+
+	if request.Token == "" {
+		user := storage.AnonymousUser
+		return userToUserMessage(user), nil
+	}
+
+	if len(request.Token) != 26 {
+		return nil, status.Error(codes.InvalidArgument, "invalid token")
+	}
+
+	user, err := s.storage.GetUserForToken(storage.ScopeAuthentication, request.Token)
+	if err != nil {
+		if errors.Is(err, storage.ErrUserNotFound) {
+			return nil, status.Error(codes.Unauthenticated, "invalid token")
+		}
+		logg.Error("failed to get user by token", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return userToUserMessage(user), nil
+}
+
+func userToUserMessage(user *storage.User) *pbuser.UserMessage {
 	return &pbuser.UserMessage{
 		Id:        user.ID,
 		Name:      user.Name,
 		Email:     user.Email,
 		Activated: user.Activated,
 		CreatedAt: user.CreatedAt.Unix(),
-	}, nil
+	}
 }
