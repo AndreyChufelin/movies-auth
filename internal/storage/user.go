@@ -13,17 +13,20 @@ var (
 	ErrEditConflict   = errors.New("user not found")
 )
 
+type Permissions []string
+
 var AnonymousUser = &User{}
 
 type User struct {
-	ID           int64     `json:"id"`
-	CreatedAt    time.Time `json:"created_at"`
-	Name         string    `json:"name" validate:"required,lte=500"`
-	Email        string    `json:"email" validate:"required,email"`
-	PasswordHash []byte    `json:"-"`
-	Password     *string   `db:"-" json:"-" validate:"required,gte=8,lte=72"`
-	Activated    bool      `json:"activated"`
-	Version      int       `json:"-"`
+	ID           int64       `json:"id"`
+	CreatedAt    time.Time   `json:"created_at"`
+	Name         string      `json:"name" validate:"required,lte=500"`
+	Email        string      `json:"email" validate:"required,email"`
+	PasswordHash []byte      `json:"-"`
+	Password     *string     `db:"-" json:"-" validate:"required,gte=8,lte=72"`
+	Activated    bool        `json:"activated"`
+	Version      int         `json:"-"`
+	Permissions  Permissions `json:"permissions" db:"-"`
 }
 
 func (u *User) IsAnonymous() bool {

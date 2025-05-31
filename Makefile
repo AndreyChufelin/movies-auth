@@ -2,7 +2,7 @@
 COMPOSE_FILE=deployments/docker-compose.yaml
 
 run:
-	docker compose -f ${COMPOSE_FILE} up --build --remove-orphans
+	docker compose -p movies-auth -f ${COMPOSE_FILE} up --build --remove-orphans
 
 generate:
 	protoc pkg/pb/*.proto --proto_path=. \

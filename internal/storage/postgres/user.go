@@ -138,3 +138,35 @@ func (s Storage) GetUserForToken(scope, tokenPlaintext string) (*storage.User, e
 
 	return &user, nil
 }
+
+func (s Storage) GetAllUserPermissions(userID int64) (storage.Permissions, error) {
+	query := `
+		SELECT permissions.code AS Permissions
+		FROM permissions
+		INNER JOIN users_permissions ON users_permissions.permission_id = permissions.id
+		INNER JOIN users ON users_permissions.user_id = users.id
+		WHERE users.id = @user_id`
+
+	args := pgx.NamedArgs{
+		"user_id": userID,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := s.db.Query(ctx, query, args)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query user permissions: %w", err)
+	}
+
+	perm, err := pgx.CollectRows(rows, pgx.RowTo[string])
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, storage.ErrUserNotFound
+		}
+		return nil, fmt.Errorf("failed to collect user permissions: %w", err)
+	}
+	permissions := storage.Permissions(perm)
+
+	return permissions, nil
+}

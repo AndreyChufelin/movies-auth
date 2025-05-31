@@ -167,16 +167,22 @@ func (s *Server) VerifyToken(ctx context.Context, request *pbuser.VerifyTokenReq
 		logg.Error("failed to get user by token", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
+	user.Permissions, err = s.storage.GetAllUserPermissions(user.ID)
+	if err != nil {
+		logg.Error("failed to get user permissions", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
 
 	return userToUserMessage(user), nil
 }
 
 func userToUserMessage(user *storage.User) *pbuser.UserMessage {
 	return &pbuser.UserMessage{
-		Id:        user.ID,
-		Name:      user.Name,
-		Email:     user.Email,
-		Activated: user.Activated,
-		CreatedAt: user.CreatedAt.Unix(),
+		Id:          user.ID,
+		Name:        user.Name,
+		Email:       user.Email,
+		Activated:   user.Activated,
+		CreatedAt:   user.CreatedAt.Unix(),
+		Permissions: user.Permissions,
 	}
 }

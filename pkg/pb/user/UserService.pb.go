@@ -28,6 +28,7 @@ type UserMessage struct {
 	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
 	Activated     bool                   `protobuf:"varint,4,opt,name=activated,proto3" json:"activated,omitempty"`
 	CreatedAt     int64                  `protobuf:"varint,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Permissions   []string               `protobuf:"bytes,6,rep,name=permissions,proto3" json:"permissions,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -95,6 +96,13 @@ func (x *UserMessage) GetCreatedAt() int64 {
 		return x.CreatedAt
 	}
 	return 0
+}
+
+func (x *UserMessage) GetPermissions() []string {
+	if x != nil {
+		return x.Permissions
+	}
+	return nil
 }
 
 type RegisterRequest struct {
@@ -353,14 +361,15 @@ var File_pkg_pb_UserService_proto protoreflect.FileDescriptor
 
 const file_pkg_pb_UserService_proto_rawDesc = "" +
 	"\n" +
-	"\x18pkg/pb/UserService.proto\x12\x04user\"\x84\x01\n" +
+	"\x18pkg/pb/UserService.proto\x12\x04user\"\xa6\x01\n" +
 	"\vUserMessage\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
 	"\x05email\x18\x03 \x01(\tR\x05email\x12\x1c\n" +
 	"\tactivated\x18\x04 \x01(\bR\tactivated\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x05 \x01(\x03R\tcreatedAt\"W\n" +
+	"created_at\x18\x05 \x01(\x03R\tcreatedAt\x12 \n" +
+	"\vpermissions\x18\x06 \x03(\tR\vpermissions\"W\n" +
 	"\x0fRegisterRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1a\n" +

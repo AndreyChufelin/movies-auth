@@ -35,7 +35,7 @@ type Storage interface {
 	UpdateUser(user *storage.User) error
 	NewToken(userID int64, ttl time.Duration, scope string) (*storage.Token, error)
 	GetUserForToken(scope, token string) (*storage.User, error)
-	// GetAllTokensForUser(user *storage.User) (storage.Token, error)
+	GetAllUserPermissions(userID int64) (storage.Permissions, error)
 	DeleteToAllTokensForUser(scope string, userID int64) error
 }
 
