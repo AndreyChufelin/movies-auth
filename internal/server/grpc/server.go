@@ -37,6 +37,7 @@ type Storage interface {
 	GetUserForToken(scope, token string) (*storage.User, error)
 	GetAllUserPermissions(userID int64) (storage.Permissions, error)
 	DeleteToAllTokensForUser(scope string, userID int64) error
+	AddPermission(userID int64, codes ...string) error
 }
 
 type Mailer interface {

@@ -170,3 +170,24 @@ func (s Storage) GetAllUserPermissions(userID int64) (storage.Permissions, error
 
 	return permissions, nil
 }
+
+func (s Storage) AddPermission(userID int64, codes ...string) error {
+	query := `
+		INSERT INTO users_permissions
+		SELECT @user_id, permissions.id FROM permissions WHERE permissions.code = ANY(@codes)`
+
+	args := pgx.NamedArgs{
+		"user_id": userID,
+		"codes":   codes,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err := s.db.Exec(ctx, query, args)
+	if err != nil {
+		return fmt.Errorf("failed to add permissions to user: %w", err)
+	}
+
+	return nil
+}

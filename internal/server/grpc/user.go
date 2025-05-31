@@ -39,6 +39,12 @@ func (s *Server) Register(ctx context.Context, request *pbuser.RegisterRequest) 
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
+	err = s.storage.AddPermission(user.ID, "movies:read")
+	if err != nil {
+		logg.Error("failed to add permission to user")
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
 	token, err := s.storage.NewToken(user.ID, 3*24*time.Hour, storage.ScopeActivation)
 	if err != nil {
 		logg.Error("failed to generate new token", "user_id", user.ID, "error", err)
