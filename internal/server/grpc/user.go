@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) Register(ctx context.Context, request *pbuser.RegisterRequest) (*pbuser.UserMessage, error) {
+func (s *Server) Register(_ context.Context, request *pbuser.RegisterRequest) (*pbuser.UserMessage, error) {
 	logg := s.logger.With("handler", "register user")
 	logg.Info("REQUEST")
 
@@ -66,7 +66,7 @@ func (s *Server) Register(ctx context.Context, request *pbuser.RegisterRequest) 
 	return userToUserMessage(user), nil
 }
 
-func (s *Server) Activated(ctx context.Context, request *pbuser.ActivatedRequest) (*pbuser.UserMessage, error) {
+func (s *Server) Activated(_ context.Context, request *pbuser.ActivatedRequest) (*pbuser.UserMessage, error) {
 	logg := s.logger.With("handler", "activated")
 	logg.Info("REQUEST")
 
@@ -105,7 +105,10 @@ func (s *Server) Activated(ctx context.Context, request *pbuser.ActivatedRequest
 	return userToUserMessage(user), nil
 }
 
-func (s *Server) Authentication(ctx context.Context, request *pbuser.AuthenticationRequest) (*pbuser.AuthenticationResponse, error) {
+func (s *Server) Authentication(
+	_ context.Context,
+	request *pbuser.AuthenticationRequest,
+) (*pbuser.AuthenticationResponse, error) {
 	logg := s.logger.With("handler", "authentication")
 	logg.Info("REQUEST")
 
@@ -152,7 +155,7 @@ func (s *Server) Authentication(ctx context.Context, request *pbuser.Authenticat
 	}, nil
 }
 
-func (s *Server) VerifyToken(ctx context.Context, request *pbuser.VerifyTokenRequest) (*pbuser.UserMessage, error) {
+func (s *Server) VerifyToken(_ context.Context, request *pbuser.VerifyTokenRequest) (*pbuser.UserMessage, error) {
 	logg := s.logger.With("handler", "verify token")
 	logg.Info("REQUEST")
 
